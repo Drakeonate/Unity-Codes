@@ -1,0 +1,136 @@
+// Author :: Edward Abiakin
+// Currently working on a map generator for my game
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class FloorGenerator : MonoBehaviour {
+    private GameObject[] floorTiles;
+    private GameObject playerObj;
+    private bool[] directionBool = new bool[4];
+    private bool directionUp = false;
+    private bool directiondown = false;
+    private bool directionRight = false;
+    private bool directionLeft = false;
+    private bool isFloorRdy = false;
+    private float randomNumber;
+    private float floorTilesLength;
+    private int randomFloorTile;
+    private GameObject[] allGameObjects;
+    private GameObject nextFloorObj;
+
+	// Use this for initialization
+	void Start () {
+        randomNumber = Random.Range(6f, 18f);
+        InitializePlayerObj();
+        InitiateNextFloorObj();
+        InitiateAllGameObjects();
+        InitiateFloorTiles();
+
+    }
+
+    void Awake()
+    {
+        InitiateDirectionBool();
+
+    }
+
+    // Update is called once per frame
+    void Update () {
+        CheckFloorRdy();
+        GenerateFloorTiles();
+        ClearFloorLevel();
+        SpawnPlayer();
+    }
+    public void GenerateFloorTiles()
+    {
+        if(isFloorRdy == true) {
+
+        for(int i = 0; i <= randomNumber; i++)
+        {
+            int randomDirectionNumber = Random.Range(0, 4);
+            directionBool[randomDirectionNumber] = true;
+            randomFloorTile = (int)Random.Range(0, floorTilesLength);
+
+            if (directionBool[0] == true)
+            {
+                Instantiate(floorTiles[randomFloorTile], floorTiles[randomFloorTile].GetComponent<Transform>().position + new Vector3(0f, 0f, floorTiles[randomFloorTile].GetComponent<Transform>().position.z * 2), Quaternion.identity);
+            }
+            if (directionBool[1] == true)
+            {
+                Instantiate(floorTiles[randomFloorTile], floorTiles[randomFloorTile].GetComponent<Transform>().position + new Vector3(0f, 0f, -floorTiles[randomFloorTile].GetComponent<Transform>().position.z * 2), Quaternion.identity);
+            }
+            if (directionBool[2] == true)
+            {
+                Instantiate(floorTiles[randomFloorTile], floorTiles[randomFloorTile].GetComponent<Transform>().position + new Vector3(floorTiles[randomFloorTile].GetComponent<Transform>().position.x * 2, 0f, 0f), Quaternion.identity);
+            }
+            if (directionBool[3] == true)
+            {
+                Instantiate(floorTiles[randomFloorTile], floorTiles[randomFloorTile].GetComponent<Transform>().position + new Vector3(-floorTiles[randomFloorTile].GetComponent<Transform>().position.x * 2, 0f, 0f), Quaternion.identity);
+            }
+
+            directionBool[randomDirectionNumber] = false;
+            }
+        }
+    }
+
+    void SpawnPlayer()
+    {
+        if(isFloorRdy == true)
+        {
+            Instantiate(playerObj, new Vector3(0f, 0f, 0f), Quaternion.identity);
+        }
+    }
+
+    void InitiateDirectionBool()
+    {
+
+        directionBool[0] = directionUp;
+        directionBool[1] = directiondown;
+        directionBool[2] = directionRight;
+        directionBool[3] = directionLeft;
+    }
+
+    void InitiateFloorTiles()
+    {
+        floorTiles = Resources.LoadAll<GameObject>("Prefabs");
+        floorTilesLength = floorTiles.Length;
+    }
+
+    void ClearFloorLevel()
+    {
+        if(isFloorRdy == true)
+        {
+           foreach(GameObject obj in allGameObjects)
+         {
+             Destroy(obj);
+         }
+            isFloorRdy = false;
+        }
+    }
+
+    void InitiateAllGameObjects()
+    {
+        allGameObjects = GameObject.FindObjectsOfType<GameObject>();
+    }
+
+    void CheckFloorRdy()
+    {
+        if(Vector3.Distance(playerObj.GetComponent<Transform>().position, nextFloorObj.GetComponent<Transform>().position) < 5f)
+        {
+            isFloorRdy = true;
+            Debug.Log("Floor is ready");
+        }
+    }
+
+    void InitiateNextFloorObj()
+    {
+        nextFloorObj = GameObject.Find("FloorChanger");
+    }
+
+    void InitializePlayerObj()
+    {
+        playerObj = GameObject.FindGameObjectWithTag("Player");
+    }
+}
